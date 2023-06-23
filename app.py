@@ -19,5 +19,5 @@ def create():
     """
     if request.method == 'POST':
         return request.data+" - Good question, sadly I'm not fully functional juuuuust yet"
-
-    return "Try asking me a question :)"
+    if request.method == 'GET':
+        return "Try asking me a question :)"
