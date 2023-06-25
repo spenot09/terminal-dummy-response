@@ -1,43 +1,32 @@
-from fastapi import FastAPI, File, Form, HTTPException, Depends, Body, UploadFile
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from flask import Flask, request, redirect, url_for
 import os
-from pydantic import BaseModel
+
+app = Flask(__name__)
+BEARER_TOKEN = os.getenv("BEARER_TOKEN")
 
 
-class QuestionResponse(BaseModel):
-    response: str
-
-
-bearer_scheme = HTTPBearer()
-BEARER_TOKEN = os.environ.get("BEARER_TOKEN")
-assert BEARER_TOKEN is not None
-
-
-def validate_token(credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
-    if credentials.scheme != "Bearer" or credentials.credentials != BEARER_TOKEN:
-        raise HTTPException(status_code=401, detail="Invalid or missing token")
-    return credentials
-
-
-app = FastAPI(dependencies=[Depends(validate_token)])
-
-
-@app.post("/", response_model=QuestionResponse)
-def home(prompt=Body(...)):
+@app.route("/", methods=("GET", "POST"))
+def home():
     """
     Reroute
     """
 
-    return create(prompt)
+    return redirect(url_for("create"))
 
 
-@app.post("/chatgpt", response_model=QuestionResponse)
-def create(prompt=Body(...)):
+@app.route("/chatgpt", methods=("GET", "POST"))
+def create():
     """
     Example function where ChatGPT response will come
     """
 
-    return {
-        "response": prompt["prompt"]
-        + " - Good question, sadly I'm not fully functional juuuuust yet"
-    }
+    if request.method == "POST":
+        if request.authorization.token == BEARER_TOKEN:
+            return (
+                request.get_json()["prompt"]
+                + " - Good question, sadly I'm not fully functional juuuuust yet"
+            )
+        else:
+            return "Failed to authorise"
+    if request.method == "GET":
+        return "Try asking me a question :)"
