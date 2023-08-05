@@ -1,7 +1,9 @@
 from flask import Flask, request, redirect, url_for
+from flask_cors import CORS
 import os
 
 app = Flask(__name__)
+CORS(app)
 BEARER_TOKEN = os.getenv("BEARER_TOKEN")
 
 
